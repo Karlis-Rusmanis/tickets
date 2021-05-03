@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <title>Tickets</title>
+</head>
+<body>
+    <div id="app">
+
+        <input type="text" v-model="title">     <!-- tas v-model lkm ir priekš Vue -->
+
+        <div class="tickets">
+            <div class="tickets__header">
+                <h1>{{title}}</h1>      <!-- šo title paņēma no Vue; var nelikt arī iekavās, bet izmantot <h1 v-html="title"></h1> (ja lieto html var likt arī tagus klāt) vai v-text-->
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+<script>
+    let app = new Vue({
+        el: "#app",     //elements ar id app
+        data: {
+            title: "All tickets"
+        }
+    });
+</script>
