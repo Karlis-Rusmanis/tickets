@@ -9,14 +9,21 @@
     <title>Tickets</title>
 </head>
 <body>
-    <div id="app">
+    <div class="sidebar">
 
+    </div>
+    <div id="app">
+        <button @click="requestApi()">request</button>
         <input type="text" v-model="title">     <!-- tas v-model lkm ir priekš Vue -->
 
         <div class="tickets">
             <div class="tickets__header">
-                <h1>{{title}}</h1>      <!-- šo title paņēma no Vue; var nelikt arī iekavās, bet izmantot <h1 v-html="title"></h1> (ja lieto html var likt arī tagus klāt) vai v-text-->
+                <h1 v-text="title"></h1>      <!-- šo title paņēma no Vue; var nelikt arī iekavās, bet izmantot <h1 v-html="title"></h1> (ja lieto html var likt arī tagus klāt) vai v-text-->
+                <tickets_table :columns="createRowHeaders()">   <!-- te komponentei pievieno klāt arī kolonnas -->
+                    <tickets_row v-for="ticket in ticket_list" :row="ticket"></tickets_row>   <!-- viena biļete no biļešu saraksta -->
+                </tickets_table>   
             </div>
+           
         </div>
 
     </div>
@@ -24,10 +31,84 @@
 </html>
 
 <script>
+
+    function createRowHeaders(headers) {    
+        let output = '';
+        for (let header of headers) {
+            output = "<th>" + header + "</th>";
+        }
+        return output;
+    }
+
+    Vue.component('tickets_table', {    //template priekš tabulas
+        props: ["columns"],
+        template: `
+        <table class="tickets_list">
+            <tr v-html="columns">
+            </tr>
+            <slot></slot>
+        </table>
+        `
+    });
+
+    Vue.component('tickets_row', {
+        props: ['row'],
+        template: `
+        <tr>
+            <td>
+                <img v-if="row.image_url" v-bind:src="row.image_url">
+                <template v-if="!row.image_url">
+                    <i>No image</i>
+                    <span>🙎🏻‍♂️</span>
+                </template>
+
+                <span>{{row.details}}</span>
+            </td>
+            <td>
+                {{row.customer_name}}
+            </td>
+            <td>{{row.date}}</td>
+            <td>
+                <span :class="'priority priority_' + row.priority">{{row.priority}}</span>
+            </td>
+        </tr>`
+    });
+
     let app = new Vue({
         el: "#app",     //elements ar id app
         data: {
-            title: "All tickets"
+            title: "All tickets",
+            ticket_titles: ["Ticket details", "Customer name", "Date", "Priority"],   //uzdod kā masīvu visus tabulu virsrakstus
+            ticket_list: []
+        },
+        methods: {
+            createRowHeaders: function () { //funkcija lai no masīva vērtībām izveidotu atsevišķus <th>> elementus teksta veidā
+                let headers = this.ticket_titles;
+
+                let output = '';
+                for (let header of headers) {
+                    output += "<th>" + header + "</th>";
+                }
+
+                return output;
+            },
+            requestApi: function () {
+                return request("api.php");
+            }
         }
     });
+
+    function request(url) {    //js veidā taisa pieprasījumu uz datu bāzi
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {   //200 ir kad lapa ir veiksmīgi ielādējusies
+                app.ticket_list = JSON.parse(this.responseText);
+            }
+        }
+
+        xhttp.open('post', url);  //pats pieprasījums datiem
+        xhttp.send();
+    }
+
+    request("api.php");
 </script>
